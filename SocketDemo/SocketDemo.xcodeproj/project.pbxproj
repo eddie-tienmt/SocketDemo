@@ -239,6 +239,7 @@
 				TargetAttributes = {
 					8EB52C171EE13459007388B6 = {
 						CreatedOnToolsVersion = 8.3.2;
+						DevelopmentTeam = U39X9A8QBQ;
 						ProvisioningStyle = Automatic;
 					};
 					8EB52C301EE13459007388B6 = {
@@ -258,6 +259,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -464,9 +466,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = U39X9A8QBQ;
 				INFOPLIST_FILE = SocketDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "--tianmaotao--.SocketDemo";
+				PRODUCT_BUNDLE_IDENTIFIER = eddie.SocketDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -475,9 +478,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = U39X9A8QBQ;
 				INFOPLIST_FILE = SocketDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "--tianmaotao--.SocketDemo";
+				PRODUCT_BUNDLE_IDENTIFIER = eddie.SocketDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -547,6 +551,7 @@
 				8EB52C471EE13459007388B6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8EB52C481EE13459007388B6 /* Build configuration list for PBXNativeTarget "SocketDemoTests" */ = {
 			isa = XCConfigurationList;
@@ -555,6 +560,7 @@
 				8EB52C4A1EE13459007388B6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8EB52C4B1EE13459007388B6 /* Build configuration list for PBXNativeTarget "SocketDemoUITests" */ = {
 			isa = XCConfigurationList;
@@ -563,6 +569,7 @@
 				8EB52C4D1EE13459007388B6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
