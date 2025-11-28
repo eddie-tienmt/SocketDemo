@@ -15,12 +15,13 @@
 		8EB52C2B1EE13459007388B6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EB52C291EE13459007388B6 /* LaunchScreen.storyboard */; };
 		8EB52C361EE13459007388B6 /* SocketDemoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EB52C351EE13459007388B6 /* SocketDemoTests.m */; };
 		8EB52C411EE13459007388B6 /* SocketDemoUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EB52C401EE13459007388B6 /* SocketDemoUITests.m */; };
-		8EB52C661EE13B04007388B6 /* TMTNSStreamSocketController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EB52C641EE13B04007388B6 /* TMTNSStreamSocketController.m */; };
-		8EB52C671EE13B04007388B6 /* TMTNSStreamSocketController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8EB52C651EE13B04007388B6 /* TMTNSStreamSocketController.xib */; };
-		8EB52C6B1EE13B44007388B6 /* TMTCFNetworkSocketController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EB52C691EE13B44007388B6 /* TMTCFNetworkSocketController.m */; };
-		8EB52C6C1EE13B44007388B6 /* TMTCFNetworkSocketController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8EB52C6A1EE13B44007388B6 /* TMTCFNetworkSocketController.xib */; };
-		8EB52C701EE13B5B007388B6 /* TMTBSDSocketController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EB52C6E1EE13B5B007388B6 /* TMTBSDSocketController.m */; };
-		8EB52C711EE13B5B007388B6 /* TMTBSDSocketController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8EB52C6F1EE13B5B007388B6 /* TMTBSDSocketController.xib */; };
+		A4FE8F822ED9A13300D582EC /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = A4FE8F802ED9A13300D582EC /* README.md */; };
+		A4FE8F832ED9A13300D582EC /* QSSocketCFNetworkImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = A4FE8F732ED9A13300D582EC /* QSSocketCFNetworkImpl.m */; };
+		A4FE8F842ED9A13300D582EC /* QSSocketNSStreamImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = A4FE8F752ED9A13300D582EC /* QSSocketNSStreamImpl.m */; };
+		A4FE8F852ED9A13300D582EC /* QSSocketBSDImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = A4FE8F712ED9A13300D582EC /* QSSocketBSDImpl.m */; };
+		A4FE8F862ED9A13300D582EC /* QSSocketFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = A4FE8F7A2ED9A13300D582EC /* QSSocketFactory.m */; };
+		A4FE8F872ED9A13300D582EC /* QSSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = A4FE8F7E2ED9A13300D582EC /* QSSocket.m */; };
+		A4FE8F882ED9A13300D582EC /* QSSocketError.m in Sources */ = {isa = PBXBuildFile; fileRef = A4FE8F782ED9A13300D582EC /* QSSocketError.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,15 +58,21 @@
 		8EB52C3C1EE13459007388B6 /* SocketDemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SocketDemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EB52C401EE13459007388B6 /* SocketDemoUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SocketDemoUITests.m; sourceTree = "<group>"; };
 		8EB52C421EE13459007388B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8EB52C631EE13B04007388B6 /* TMTNSStreamSocketController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TMTNSStreamSocketController.h; sourceTree = "<group>"; };
-		8EB52C641EE13B04007388B6 /* TMTNSStreamSocketController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TMTNSStreamSocketController.m; sourceTree = "<group>"; };
-		8EB52C651EE13B04007388B6 /* TMTNSStreamSocketController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TMTNSStreamSocketController.xib; sourceTree = "<group>"; };
-		8EB52C681EE13B44007388B6 /* TMTCFNetworkSocketController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TMTCFNetworkSocketController.h; sourceTree = "<group>"; };
-		8EB52C691EE13B44007388B6 /* TMTCFNetworkSocketController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TMTCFNetworkSocketController.m; sourceTree = "<group>"; };
-		8EB52C6A1EE13B44007388B6 /* TMTCFNetworkSocketController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TMTCFNetworkSocketController.xib; sourceTree = "<group>"; };
-		8EB52C6D1EE13B5B007388B6 /* TMTBSDSocketController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TMTBSDSocketController.h; sourceTree = "<group>"; };
-		8EB52C6E1EE13B5B007388B6 /* TMTBSDSocketController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TMTBSDSocketController.m; sourceTree = "<group>"; };
-		8EB52C6F1EE13B5B007388B6 /* TMTBSDSocketController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TMTBSDSocketController.xib; sourceTree = "<group>"; };
+		A4FE8F702ED9A13300D582EC /* QSSocketBSDImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QSSocketBSDImpl.h; sourceTree = "<group>"; };
+		A4FE8F712ED9A13300D582EC /* QSSocketBSDImpl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QSSocketBSDImpl.m; sourceTree = "<group>"; };
+		A4FE8F722ED9A13300D582EC /* QSSocketCFNetworkImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QSSocketCFNetworkImpl.h; sourceTree = "<group>"; };
+		A4FE8F732ED9A13300D582EC /* QSSocketCFNetworkImpl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QSSocketCFNetworkImpl.m; sourceTree = "<group>"; };
+		A4FE8F742ED9A13300D582EC /* QSSocketNSStreamImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QSSocketNSStreamImpl.h; sourceTree = "<group>"; };
+		A4FE8F752ED9A13300D582EC /* QSSocketNSStreamImpl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QSSocketNSStreamImpl.m; sourceTree = "<group>"; };
+		A4FE8F772ED9A13300D582EC /* QSSocketError.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QSSocketError.h; sourceTree = "<group>"; };
+		A4FE8F782ED9A13300D582EC /* QSSocketError.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QSSocketError.m; sourceTree = "<group>"; };
+		A4FE8F792ED9A13300D582EC /* QSSocketFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QSSocketFactory.h; sourceTree = "<group>"; };
+		A4FE8F7A2ED9A13300D582EC /* QSSocketFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QSSocketFactory.m; sourceTree = "<group>"; };
+		A4FE8F7B2ED9A13300D582EC /* QSSocketProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QSSocketProtocol.h; sourceTree = "<group>"; };
+		A4FE8F7D2ED9A13300D582EC /* QSSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QSSocket.h; sourceTree = "<group>"; };
+		A4FE8F7E2ED9A13300D582EC /* QSSocket.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QSSocket.m; sourceTree = "<group>"; };
+		A4FE8F7F2ED9A13300D582EC /* QSSocketDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QSSocketDelegate.h; sourceTree = "<group>"; };
+		A4FE8F802ED9A13300D582EC /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,7 +127,7 @@
 				8EB52C1F1EE13459007388B6 /* AppDelegate.m */,
 				8EB52C211EE13459007388B6 /* ViewController.h */,
 				8EB52C221EE13459007388B6 /* ViewController.m */,
-				8EB52C4E1EE137EF007388B6 /* controller */,
+				A4FE8F812ED9A13300D582EC /* QSSocket */,
 				8EB52C241EE13459007388B6 /* Main.storyboard */,
 				8EB52C271EE13459007388B6 /* Assets.xcassets */,
 				8EB52C291EE13459007388B6 /* LaunchScreen.storyboard */,
@@ -156,20 +163,42 @@
 			path = SocketDemoUITests;
 			sourceTree = "<group>";
 		};
-		8EB52C4E1EE137EF007388B6 /* controller */ = {
+		A4FE8F762ED9A13300D582EC /* Impl */ = {
 			isa = PBXGroup;
 			children = (
-				8EB52C631EE13B04007388B6 /* TMTNSStreamSocketController.h */,
-				8EB52C641EE13B04007388B6 /* TMTNSStreamSocketController.m */,
-				8EB52C651EE13B04007388B6 /* TMTNSStreamSocketController.xib */,
-				8EB52C681EE13B44007388B6 /* TMTCFNetworkSocketController.h */,
-				8EB52C691EE13B44007388B6 /* TMTCFNetworkSocketController.m */,
-				8EB52C6A1EE13B44007388B6 /* TMTCFNetworkSocketController.xib */,
-				8EB52C6D1EE13B5B007388B6 /* TMTBSDSocketController.h */,
-				8EB52C6E1EE13B5B007388B6 /* TMTBSDSocketController.m */,
-				8EB52C6F1EE13B5B007388B6 /* TMTBSDSocketController.xib */,
+				A4FE8F702ED9A13300D582EC /* QSSocketBSDImpl.h */,
+				A4FE8F712ED9A13300D582EC /* QSSocketBSDImpl.m */,
+				A4FE8F722ED9A13300D582EC /* QSSocketCFNetworkImpl.h */,
+				A4FE8F732ED9A13300D582EC /* QSSocketCFNetworkImpl.m */,
+				A4FE8F742ED9A13300D582EC /* QSSocketNSStreamImpl.h */,
+				A4FE8F752ED9A13300D582EC /* QSSocketNSStreamImpl.m */,
 			);
-			path = controller;
+			path = Impl;
+			sourceTree = "<group>";
+		};
+		A4FE8F7C2ED9A13300D582EC /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				A4FE8F762ED9A13300D582EC /* Impl */,
+				A4FE8F772ED9A13300D582EC /* QSSocketError.h */,
+				A4FE8F782ED9A13300D582EC /* QSSocketError.m */,
+				A4FE8F792ED9A13300D582EC /* QSSocketFactory.h */,
+				A4FE8F7A2ED9A13300D582EC /* QSSocketFactory.m */,
+				A4FE8F7B2ED9A13300D582EC /* QSSocketProtocol.h */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		A4FE8F812ED9A13300D582EC /* QSSocket */ = {
+			isa = PBXGroup;
+			children = (
+				A4FE8F7C2ED9A13300D582EC /* Core */,
+				A4FE8F7D2ED9A13300D582EC /* QSSocket.h */,
+				A4FE8F7E2ED9A13300D582EC /* QSSocket.m */,
+				A4FE8F7F2ED9A13300D582EC /* QSSocketDelegate.h */,
+				A4FE8F802ED9A13300D582EC /* README.md */,
+			);
+			path = QSSocket;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -282,10 +311,8 @@
 			files = (
 				8EB52C2B1EE13459007388B6 /* LaunchScreen.storyboard in Resources */,
 				8EB52C281EE13459007388B6 /* Assets.xcassets in Resources */,
-				8EB52C6C1EE13B44007388B6 /* TMTCFNetworkSocketController.xib in Resources */,
+				A4FE8F822ED9A13300D582EC /* README.md in Resources */,
 				8EB52C261EE13459007388B6 /* Main.storyboard in Resources */,
-				8EB52C711EE13B5B007388B6 /* TMTBSDSocketController.xib in Resources */,
-				8EB52C671EE13B04007388B6 /* TMTNSStreamSocketController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,11 +337,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8EB52C701EE13B5B007388B6 /* TMTBSDSocketController.m in Sources */,
-				8EB52C661EE13B04007388B6 /* TMTNSStreamSocketController.m in Sources */,
 				8EB52C231EE13459007388B6 /* ViewController.m in Sources */,
+				A4FE8F832ED9A13300D582EC /* QSSocketCFNetworkImpl.m in Sources */,
+				A4FE8F842ED9A13300D582EC /* QSSocketNSStreamImpl.m in Sources */,
+				A4FE8F852ED9A13300D582EC /* QSSocketBSDImpl.m in Sources */,
+				A4FE8F862ED9A13300D582EC /* QSSocketFactory.m in Sources */,
+				A4FE8F872ED9A13300D582EC /* QSSocket.m in Sources */,
+				A4FE8F882ED9A13300D582EC /* QSSocketError.m in Sources */,
 				8EB52C201EE13459007388B6 /* AppDelegate.m in Sources */,
-				8EB52C6B1EE13B44007388B6 /* TMTCFNetworkSocketController.m in Sources */,
 				8EB52C1D1EE13459007388B6 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
