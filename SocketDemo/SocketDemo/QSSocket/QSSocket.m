@@ -9,6 +9,7 @@
 #import "QSSocket.h"
 #import "Core/QSSocketProtocol.h"
 #import "Core/QSSocketError.h"
+#import "Core/QSSocketLogger.h"
 
 @interface QSSocket () {
     id<QSSocketProtocol> _socketImpl;
@@ -30,12 +31,29 @@
         _socketType = type;
         _socketImpl = [QSSocketFactory createSocketWithType:type];
         
+        NSString *typeName = @"Unknown";
+        switch (type) {
+            case QSSocketTypeBSD:
+                typeName = @"BSD Socket";
+                break;
+            case QSSocketTypeCFNetwork:
+                typeName = @"CFNetwork";
+                break;
+            case QSSocketTypeNSStream:
+                typeName = @"NSStream";
+                break;
+        }
+        QSSocketLog(@"[Init] initWithType:%@", typeName);
+        
         // 设置数据接收回调
         __weak typeof(self) weakSelf = self;
         [_socketImpl setReceiveDataCallback:^(NSData *data) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (strongSelf && strongSelf.delegate && [strongSelf.delegate respondsToSelector:@selector(socket:didReceiveData:)]) {
-                [strongSelf.delegate socket:strongSelf didReceiveData:data];
+            if (strongSelf) {
+                QSSocketLog(@"[Receive] didReceiveData:接收数据 %lu bytes", (unsigned long)data.length);
+                if (strongSelf.delegate && [strongSelf.delegate respondsToSelector:@selector(socket:didReceiveData:)]) {
+                    [strongSelf.delegate socket:strongSelf didReceiveData:data];
+                }
             }
         }];
         
@@ -46,10 +64,16 @@
             
             if (strongSelf.delegate) {
                 if (connected) {
+                    QSSocketLog(@"[Success] socketDidConnect:连接成功");
                     if ([strongSelf.delegate respondsToSelector:@selector(socketDidConnect:)]) {
                         [strongSelf.delegate socketDidConnect:strongSelf];
                     }
                 } else {
+                    if (error) {
+                        QSSocketLog(@"[Error] socketDidDisconnect:断开连接 - %@ (Code:%ld)", error.localizedDescription, (long)error.code);
+                    } else {
+                        QSSocketLog(@"[Disconnect] socketDidDisconnect:正常断开连接");
+                    }
                     if ([strongSelf.delegate respondsToSelector:@selector(socketDidDisconnect:error:)]) {
                         [strongSelf.delegate socketDidDisconnect:strongSelf error:error];
                     }
@@ -71,10 +95,13 @@
 #pragma mark - Public Methods
 
 - (BOOL)connectToHost:(NSString *)host port:(NSInteger)port error:(NSError **)error {
+    QSSocketLog(@"[Connect] connectToHost:%@:%ld", host, port);
+    
     if (!host || host.length == 0) {
         if (error) {
             *error = [QSSocketError errorWithCode:QSSocketErrorCodeInvalidHost userInfo:nil];
         }
+        QSSocketLog(@"[Error] connectToHost:主机地址为空");
         return NO;
     }
     
@@ -82,13 +109,19 @@
         if (error) {
             *error = [QSSocketError errorWithCode:QSSocketErrorCodeInvalidPort userInfo:nil];
         }
+        QSSocketLog(@"[Error] connectToHost:端口号无效 - %ld", port);
         return NO;
     }
     
-    return [_socketImpl connectToHost:host port:port error:error];
+    BOOL result = [_socketImpl connectToHost:host port:port error:error];
+    if (!result && error && *error) {
+        QSSocketLog(@"[Error] connectToHost:连接失败 - %@ (Code:%ld)", (*error).localizedDescription, (long)(*error).code);
+    }
+    return result;
 }
 
 - (void)disconnect {
+    QSSocketLog(@"[Disconnect] disconnect:断开连接");
     [_socketImpl disconnect];
 }
 
@@ -97,10 +130,18 @@
         if (error) {
             *error = [QSSocketError errorWithCode:QSSocketErrorCodeEmptyData userInfo:nil];
         }
+        QSSocketLog(@"[Error] sendData:数据为空");
         return NO;
     }
     
-    return [_socketImpl sendData:data error:error];
+    QSSocketLog(@"[Send] sendData:发送数据 %lu bytes", (unsigned long)data.length);
+    BOOL result = [_socketImpl sendData:data error:error];
+    if (result) {
+        QSSocketLog(@"[Success] sendData:发送成功");
+    } else if (error && *error) {
+        QSSocketLog(@"[Error] sendData:发送失败 - %@ (Code:%ld)", (*error).localizedDescription, (long)(*error).code);
+    }
+    return result;
 }
 
 - (BOOL)isConnected {

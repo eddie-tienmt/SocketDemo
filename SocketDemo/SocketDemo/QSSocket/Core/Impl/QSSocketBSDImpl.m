@@ -8,6 +8,7 @@
 
 #import "QSSocketBSDImpl.h"
 #import "../QSSocketError.h"
+#import "../QSSocketLogger.h"
 #import <arpa/inet.h>
 #import <netdb.h>
 #import <sys/socket.h>
@@ -77,25 +78,32 @@
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        QSSocketLog(@"[BSD] 开始创建socket连接");
+        
         // 创建socket
         self->_socketFileDescriptor = socket(AF_INET, SOCK_STREAM, 0);
         if (-1 == self->_socketFileDescriptor) {
             NSError *underlyingError = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"%s", strerror(errno)]}];
             connectError = [QSSocketError errorWithCode:QSSocketErrorCodeCreateSocketFailed underlyingError:underlyingError userInfo:nil];
+            QSSocketLog(@"[BSD] 创建socket失败: %s", strerror(errno));
             dispatch_semaphore_signal(semaphore);
             return;
         }
+        QSSocketLog(@"[BSD] socket创建成功, fd=%d", self->_socketFileDescriptor);
         
         // 解析主机地址
+        QSSocketLog(@"[BSD] 开始解析主机地址: %@", host);
         struct hostent *remoteHostEnt = gethostbyname([host UTF8String]);
         if (NULL == remoteHostEnt) {
             close(self->_socketFileDescriptor);
             self->_socketFileDescriptor = -1;
             NSError *underlyingError = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"%s", strerror(errno)]}];
             connectError = [QSSocketError errorWithCode:QSSocketErrorCodeHostResolutionFailed underlyingError:underlyingError userInfo:nil];
+            QSSocketLog(@"[BSD] 地址解析失败: %s", strerror(errno));
             dispatch_semaphore_signal(semaphore);
             return;
         }
+        QSSocketLog(@"[BSD] 地址解析成功");
         
         struct in_addr *remoteInAddr = (struct in_addr *)remoteHostEnt->h_addr_list[0];
         
@@ -106,12 +114,14 @@
         socketParameters.sin_port = htons((uint16_t)port);
         
         // 连接socket
+        QSSocketLog(@"[BSD] 开始连接socket");
         int ret = connect(self->_socketFileDescriptor, (struct sockaddr *)&socketParameters, sizeof(socketParameters));
         if (-1 == ret) {
             close(self->_socketFileDescriptor);
             self->_socketFileDescriptor = -1;
             NSError *underlyingError = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"%s", strerror(errno)]}];
             connectError = [QSSocketError errorWithCode:QSSocketErrorCodeConnectionFailed underlyingError:underlyingError userInfo:nil];
+            QSSocketLog(@"[BSD] socket连接失败: %s", strerror(errno));
             dispatch_semaphore_signal(semaphore);
             return;
         }
@@ -127,6 +137,7 @@
         self->_isConnected = YES;
         self->_shouldReceiveData = YES;
         
+        QSSocketLog(@"[BSD] socket连接成功, fd=%d", self->_socketFileDescriptor);
         dispatch_semaphore_signal(semaphore);
         
         // 启动数据接收线程
@@ -167,12 +178,14 @@
         return;
     }
     
+    QSSocketLog(@"[BSD] 开始断开连接, fd=%d", _socketFileDescriptor);
     _shouldReceiveData = NO;
     _isConnected = NO;
     
     if (_socketFileDescriptor != -1) {
         close(_socketFileDescriptor);
         _socketFileDescriptor = -1;
+        QSSocketLog(@"[BSD] socket已关闭");
     }
     
     // 等待接收线程结束
@@ -208,14 +221,18 @@
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        QSSocketLog(@"[BSD] 开始发送数据, size=%lu, fd=%d", (unsigned long)data.length, self->_socketFileDescriptor);
         ssize_t bytesSent = send(self->_socketFileDescriptor, data.bytes, data.length, 0);
         if (bytesSent == -1) {
             NSError *underlyingError = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"%s", strerror(errno)]}];
             sendError = [QSSocketError errorWithCode:QSSocketErrorCodeSendFailed underlyingError:underlyingError userInfo:nil];
+            QSSocketLog(@"[BSD] 发送数据失败: %s", strerror(errno));
         } else if (bytesSent != data.length) {
             sendError = [QSSocketError errorWithCode:QSSocketErrorCodeSendIncomplete userInfo:nil];
+            QSSocketLog(@"[BSD] 数据未完全发送: 期望%lu, 实际%zd", (unsigned long)data.length, bytesSent);
         } else {
             sendSuccess = YES;
+            QSSocketLog(@"[BSD] 数据发送成功: %zd bytes", bytesSent);
         }
         dispatch_semaphore_signal(semaphore);
     });
@@ -265,11 +282,13 @@
 
 - (void)receiveDataLoop {
     @autoreleasepool {
+        QSSocketLog(@"[BSD] 数据接收线程启动");
         while (_shouldReceiveData && _isConnected && _socketFileDescriptor != -1) {
             char buffer[kBufferSize];
             ssize_t bytesRead = recv(_socketFileDescriptor, buffer, kBufferSize, 0);
             
             if (bytesRead > 0) {
+                QSSocketLog(@"[BSD] 接收到数据: %zd bytes", bytesRead);
                 NSData *data = [NSData dataWithBytes:buffer length:bytesRead];
                 if (_receiveDataCallback) {
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -278,6 +297,7 @@
                 }
             } else if (bytesRead == 0) {
                 // 连接已关闭
+                QSSocketLog(@"[BSD] 连接已关闭 (recv返回0)");
                 [self handleConnectionClosed];
                 break;
             } else {
@@ -285,6 +305,7 @@
                 if (errno != EAGAIN && errno != EWOULDBLOCK) {
                     NSError *underlyingError = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"%s", strerror(errno)]}];
                     NSError *error = [QSSocketError errorWithCode:QSSocketErrorCodeReadError underlyingError:underlyingError userInfo:nil];
+                    QSSocketLog(@"[BSD] 接收数据错误: %s", strerror(errno));
                     [self handleConnectionError:error];
                     break;
                 }
@@ -293,6 +314,7 @@
             // 短暂休眠，避免CPU占用过高
             usleep(10000); // 10ms
         }
+        QSSocketLog(@"[BSD] 数据接收线程结束");
     }
 }
 

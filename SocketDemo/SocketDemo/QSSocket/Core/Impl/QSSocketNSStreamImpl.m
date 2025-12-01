@@ -8,6 +8,7 @@
 
 #import "QSSocketNSStreamImpl.h"
 #import "../QSSocketError.h"
+#import "../QSSocketLogger.h"
 
 #define kBufferSize 1024
 
@@ -74,6 +75,8 @@
     
     _networkThread = [[NSThread alloc] initWithBlock:^{
         @autoreleasepool {
+            QSSocketLog(@"[NSStream] 开始创建流连接");
+            
             // 创建流
             [NSStream getStreamsToHostWithName:host
                                            port:(NSInteger)port
@@ -82,9 +85,11 @@
             
             if (!self->_inputStream || !self->_outputStream) {
                 connectError = [QSSocketError errorWithCode:QSSocketErrorCodeCreateStreamFailed userInfo:nil];
+                QSSocketLog(@"[NSStream] 创建流失败");
                 dispatch_semaphore_signal(semaphore);
                 return;
             }
+            QSSocketLog(@"[NSStream] 流创建成功");
             
             // 设置代理
             self->_inputStream.delegate = self;
@@ -95,6 +100,7 @@
             [self->_outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
             
             // 打开流
+            QSSocketLog(@"[NSStream] 开始打开流");
             [self->_inputStream open];
             [self->_outputStream open];
             
@@ -108,12 +114,15 @@
             if (inputStatus == NSStreamStatusOpen && outputStatus == NSStreamStatusOpen) {
                 connectSuccess = YES;
                 self->_isConnected = YES;
+                QSSocketLog(@"[NSStream] 连接成功");
             } else if (inputStatus == NSStreamStatusError || outputStatus == NSStreamStatusError) {
                 NSError *streamError = self->_inputStream.streamError ?: self->_outputStream.streamError;
                 if (streamError) {
                     connectError = [QSSocketError errorWithCode:QSSocketErrorCodeConnectionFailed underlyingError:streamError userInfo:nil];
+                    QSSocketLog(@"[NSStream] 连接失败: %@", streamError.localizedDescription);
                 } else {
                     connectError = [QSSocketError errorWithCode:QSSocketErrorCodeConnectionFailed userInfo:nil];
+                    QSSocketLog(@"[NSStream] 连接失败");
                 }
             }
             
@@ -128,6 +137,7 @@
                 }
                 
                 // 运行RunLoop
+                QSSocketLog(@"[NSStream] RunLoop开始运行");
                 [runLoop run];
             }
         }
@@ -162,6 +172,7 @@
         return;
     }
     
+    QSSocketLog(@"[NSStream] 开始断开连接");
     _isConnected = NO;
     
     if (_inputStream) {
@@ -169,6 +180,7 @@
         [_inputStream close];
         _inputStream.delegate = nil;
         _inputStream = nil;
+        QSSocketLog(@"[NSStream] 输入流已关闭");
     }
     
     if (_outputStream) {
@@ -176,6 +188,7 @@
         [_outputStream close];
         _outputStream.delegate = nil;
         _outputStream = nil;
+        QSSocketLog(@"[NSStream] 输出流已关闭");
     }
     
     // 停止RunLoop
@@ -206,6 +219,7 @@
         return NO;
     }
     
+    QSSocketLog(@"[NSStream] 开始发送数据, size=%lu", (unsigned long)data.length);
     NSInteger bytesWritten = [_outputStream write:data.bytes maxLength:data.length];
     
     if (bytesWritten == -1) {
@@ -217,14 +231,17 @@
                 *error = [QSSocketError errorWithCode:QSSocketErrorCodeSendFailed userInfo:nil];
             }
         }
+        QSSocketLog(@"[NSStream] 发送数据失败: %@", streamError ? streamError.localizedDescription : @"未知错误");
         return NO;
     } else if (bytesWritten != data.length) {
         if (error) {
             *error = [QSSocketError errorWithCode:QSSocketErrorCodeSendIncomplete userInfo:nil];
         }
+        QSSocketLog(@"[NSStream] 数据未完全发送: 期望%lu, 实际%ld", (unsigned long)data.length, bytesWritten);
         return NO;
     }
     
+    QSSocketLog(@"[NSStream] 数据发送成功: %ld bytes", bytesWritten);
     return YES;
 }
 
@@ -256,6 +273,7 @@
                 NSInteger bytesRead = [_inputStream read:buffer maxLength:kBufferSize];
                 
                 if (bytesRead > 0) {
+                    QSSocketLog(@"[NSStream] 接收到数据: %ld bytes", bytesRead);
                     NSData *data = [NSData dataWithBytes:buffer length:bytesRead];
                     if (_receiveDataCallback) {
                         dispatch_async(dispatch_get_main_queue(), ^{
@@ -264,6 +282,7 @@
                     }
                 } else if (bytesRead == 0) {
                     // 流结束
+                    QSSocketLog(@"[NSStream] 流结束 (bytesRead=0)");
                     [self handleStreamEnd];
                 } else {
                     // 读取错误
@@ -271,8 +290,10 @@
                     NSError *error = nil;
                     if (streamError) {
                         error = [QSSocketError errorWithCode:QSSocketErrorCodeReadError underlyingError:streamError userInfo:nil];
+                        QSSocketLog(@"[NSStream] 读取数据错误: %@", streamError.localizedDescription);
                     } else {
                         error = [QSSocketError errorWithCode:QSSocketErrorCodeReadError userInfo:nil];
+                        QSSocketLog(@"[NSStream] 读取数据错误");
                     }
                     [self handleConnectionError:error];
                 }
@@ -291,8 +312,10 @@
             NSError *error = nil;
             if (streamError) {
                 error = [QSSocketError errorWithCode:QSSocketErrorCodeConnectionFailed underlyingError:streamError userInfo:nil];
+                QSSocketLog(@"[NSStream] 流错误: %@", streamError.localizedDescription);
             } else {
                 error = [QSSocketError errorWithCode:QSSocketErrorCodeConnectionFailed userInfo:nil];
+                QSSocketLog(@"[NSStream] 流错误");
             }
             [self handleConnectionError:error];
             break;

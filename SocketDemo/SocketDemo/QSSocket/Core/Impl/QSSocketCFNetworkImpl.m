@@ -8,6 +8,7 @@
 
 #import "QSSocketCFNetworkImpl.h"
 #import "../QSSocketError.h"
+#import "../QSSocketLogger.h"
 #import <CoreFoundation/CoreFoundation.h>
 
 #define kBufferSize 1024
@@ -79,6 +80,8 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
     
     _networkThread = [[NSThread alloc] initWithBlock:^{
         @autoreleasepool {
+            QSSocketLog(@"[CFNetwork] 开始创建socket流连接");
+            
             // 创建socket流
             CFStreamCreatePairWithSocketToHost(kCFAllocatorDefault,
                                                (__bridge CFStringRef)host,
@@ -88,9 +91,11 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
             
             if (!self->_readStream || !self->_writeStream) {
                 connectError = [QSSocketError errorWithCode:QSSocketErrorCodeCreateStreamFailed userInfo:nil];
+                QSSocketLog(@"[CFNetwork] 创建流失败");
                 dispatch_semaphore_signal(semaphore);
                 return;
             }
+            QSSocketLog(@"[CFNetwork] 流创建成功");
             
             // 设置客户端上下文
             CFStreamClientContext ctx = {0, (__bridge void *)(self), NULL, NULL, NULL};
@@ -103,8 +108,10 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
             // 设置读取流回调
             if (CFReadStreamSetClient(self->_readStream, registeredEvents, socketCallback, &ctx)) {
                 CFReadStreamScheduleWithRunLoop(self->_readStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+                QSSocketLog(@"[CFNetwork] 回调设置成功");
             } else {
                 connectError = [QSSocketError errorWithCode:QSSocketErrorCodeSetCallbackFailed userInfo:nil];
+                QSSocketLog(@"[CFNetwork] 设置回调失败");
                 CFReadStreamClose(self->_readStream);
                 CFWriteStreamClose(self->_writeStream);
                 CFRelease(self->_readStream);
@@ -116,8 +123,10 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
             }
             
             // 打开流
+            QSSocketLog(@"[CFNetwork] 开始打开流");
             if (!CFReadStreamOpen(self->_readStream) || !CFWriteStreamOpen(self->_writeStream)) {
                 connectError = [QSSocketError errorWithCode:QSSocketErrorCodeOpenStreamFailed userInfo:nil];
+                QSSocketLog(@"[CFNetwork] 打开流失败");
                 CFReadStreamClose(self->_readStream);
                 CFWriteStreamClose(self->_writeStream);
                 CFRelease(self->_readStream);
@@ -138,6 +147,7 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
             if (readStatus == kCFStreamStatusOpen && writeStatus == kCFStreamStatusOpen) {
                 connectSuccess = YES;
                 self->_isConnected = YES;
+                QSSocketLog(@"[CFNetwork] 连接成功");
             } else if (readStatus == kCFStreamStatusError || writeStatus == kCFStreamStatusError) {
                 CFErrorRef errorRef = CFReadStreamCopyError(self->_readStream);
                 if (!errorRef) {
@@ -147,9 +157,11 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
                     NSString *errorDesc = (__bridge NSString *)CFErrorCopyDescription(errorRef);
                     NSError *underlyingError = [NSError errorWithDomain:(__bridge NSString *)CFErrorGetDomain(errorRef) code:CFErrorGetCode(errorRef) userInfo:@{NSLocalizedDescriptionKey: errorDesc ?: @""}];
                     connectError = [QSSocketError errorWithCode:QSSocketErrorCodeConnectionFailed underlyingError:underlyingError userInfo:nil];
+                    QSSocketLog(@"[CFNetwork] 连接失败: %@", errorDesc);
                     CFRelease(errorRef);
                 } else {
                     connectError = [QSSocketError errorWithCode:QSSocketErrorCodeConnectionFailed userInfo:nil];
+                    QSSocketLog(@"[CFNetwork] 连接失败");
                 }
             }
             
@@ -164,6 +176,7 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
                 }
                 
                 // 运行RunLoop
+                QSSocketLog(@"[CFNetwork] RunLoop开始运行");
                 CFRunLoopRun();
             }
         }
@@ -198,6 +211,7 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
         return;
     }
     
+    QSSocketLog(@"[CFNetwork] 开始断开连接");
     _isConnected = NO;
     
     if (_readStream) {
@@ -205,17 +219,20 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
         CFReadStreamClose(_readStream);
         CFRelease(_readStream);
         _readStream = NULL;
+        QSSocketLog(@"[CFNetwork] 读取流已关闭");
     }
     
     if (_writeStream) {
         CFWriteStreamClose(_writeStream);
         CFRelease(_writeStream);
         _writeStream = NULL;
+        QSSocketLog(@"[CFNetwork] 写入流已关闭");
     }
     
     if (_runLoop) {
         CFRunLoopStop(_runLoop);
         _runLoop = NULL;
+        QSSocketLog(@"[CFNetwork] RunLoop已停止");
     }
     
     // 回调断开连接
@@ -241,6 +258,7 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
         return NO;
     }
     
+    QSSocketLog(@"[CFNetwork] 开始发送数据, size=%lu", (unsigned long)data.length);
     CFIndex bytesWritten = CFWriteStreamWrite(_writeStream, data.bytes, data.length);
     
     if (bytesWritten == -1) {
@@ -251,20 +269,24 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
             if (error) {
                 *error = [QSSocketError errorWithCode:QSSocketErrorCodeSendFailed underlyingError:underlyingError userInfo:nil];
             }
+            QSSocketLog(@"[CFNetwork] 发送数据失败: %@", errorDesc);
             CFRelease(errorRef);
         } else {
             if (error) {
                 *error = [QSSocketError errorWithCode:QSSocketErrorCodeSendFailed userInfo:nil];
             }
+            QSSocketLog(@"[CFNetwork] 发送数据失败");
         }
         return NO;
     } else if (bytesWritten != data.length) {
         if (error) {
             *error = [QSSocketError errorWithCode:QSSocketErrorCodeSendIncomplete userInfo:nil];
         }
+        QSSocketLog(@"[CFNetwork] 数据未完全发送: 期望%lu, 实际%ld", (unsigned long)data.length, bytesWritten);
         return NO;
     }
     
+    QSSocketLog(@"[CFNetwork] 数据发送成功: %ld bytes", bytesWritten);
     return YES;
 }
 
@@ -296,6 +318,7 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
                 CFIndex bytesRead = CFReadStreamRead(_readStream, buffer, kBufferSize);
                 
                 if (bytesRead > 0) {
+                    QSSocketLog(@"[CFNetwork] 接收到数据: %ld bytes", bytesRead);
                     NSData *data = [NSData dataWithBytes:buffer length:bytesRead];
                     if (_receiveDataCallback) {
                         dispatch_async(dispatch_get_main_queue(), ^{
@@ -304,6 +327,7 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
                     }
                 } else if (bytesRead == 0) {
                     // 流结束
+                    QSSocketLog(@"[CFNetwork] 流结束 (bytesRead=0)");
                     [self handleStreamEnd];
                     break;
                 } else {
@@ -314,9 +338,11 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
                         NSString *errorDesc = (__bridge NSString *)CFErrorCopyDescription(errorRef);
                         NSError *underlyingError = [NSError errorWithDomain:(__bridge NSString *)CFErrorGetDomain(errorRef) code:CFErrorGetCode(errorRef) userInfo:@{NSLocalizedDescriptionKey: errorDesc ?: @""}];
                         error = [QSSocketError errorWithCode:QSSocketErrorCodeReadError underlyingError:underlyingError userInfo:nil];
+                        QSSocketLog(@"[CFNetwork] 读取数据错误: %@", errorDesc);
                         CFRelease(errorRef);
                     } else {
                         error = [QSSocketError errorWithCode:QSSocketErrorCodeReadError userInfo:nil];
+                        QSSocketLog(@"[CFNetwork] 读取数据错误");
                     }
                     [self handleConnectionError:error];
                     break;
@@ -341,9 +367,11 @@ static void socketCallback(CFReadStreamRef stream, CFStreamEventType event, void
                 NSString *errorDesc = (__bridge NSString *)CFErrorCopyDescription(errorRef);
                 NSError *underlyingError = [NSError errorWithDomain:(__bridge NSString *)CFErrorGetDomain(errorRef) code:CFErrorGetCode(errorRef) userInfo:@{NSLocalizedDescriptionKey: errorDesc ?: @""}];
                 error = [QSSocketError errorWithCode:QSSocketErrorCodeConnectionFailed underlyingError:underlyingError userInfo:nil];
+                QSSocketLog(@"[CFNetwork] 流错误: %@", errorDesc);
                 CFRelease(errorRef);
             } else {
                 error = [QSSocketError errorWithCode:QSSocketErrorCodeConnectionFailed userInfo:nil];
+                QSSocketLog(@"[CFNetwork] 流错误");
             }
             [self handleConnectionError:error];
             break;
